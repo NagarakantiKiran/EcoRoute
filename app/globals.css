@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --eco-bg:        #0d1f12;
+  --eco-surface:   #1a2e1d;
+  --eco-input:     #162219;
+  --eco-green:     #52b788;
+  --eco-green-dim: #3ddc84;
+  --eco-amber:     #f4a261;
+  --eco-orange:    #e07c3a;
+  --eco-text:      #f0f4f0;
+  --eco-muted:     #7a9e7e;
+  --eco-border:    rgba(82, 183, 136, 0.15);
+
+  --grade-a: #52b788;
+  --grade-b: #a8c5a0;
+  --grade-c: #f4a261;
+  --grade-d: #e07c3a;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+  background-color: var(--eco-bg);
+  color: var(--eco-text);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* MapLibre canvas — green tint overlay */
+/* Shifts blue-grey dark tiles toward forest green */
+/* Adjust hue-rotate and saturation if result looks off */
+.maplibregl-canvas {
+  filter: hue-rotate(120deg) saturate(0.6) brightness(0.85);
+}
+
+/* MapLibre attribution — keep it subtle */
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+  opacity: 0.5;
+}
+
+/* Scrollbar — match dark theme */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--eco-bg); }
+::-webkit-scrollbar-thumb { background: var(--eco-border); border-radius: 3px; }
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
