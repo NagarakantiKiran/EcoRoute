@@ -11,14 +11,18 @@ const MAP_CONFIG = {
   attributionControl: false as const,
 };
 
-export default function EcoMap() {
+interface Props {
+  mapRef?: React.MutableRefObject<maplibregl.Map | null>;
+}
+
+export default function EcoMap({ mapRef }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const localMapRef = useRef<maplibregl.Map | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || mapRef.current) return;
+    if (!containerRef.current || localMapRef.current) return;
 
-    mapRef.current = new maplibregl.Map({
+    localMapRef.current = new maplibregl.Map({
       container: containerRef.current,
       style: MAP_CONFIG.style,
       center: MAP_CONFIG.center,
@@ -26,16 +30,22 @@ export default function EcoMap() {
       attributionControl: MAP_CONFIG.attributionControl,
     });
 
-    mapRef.current.addControl(
+    localMapRef.current.addControl(
       new maplibregl.AttributionControl({ compact: true }),
       'bottom-right'
     );
 
+    // Expose to parent
+    if (mapRef) {
+      mapRef.current = localMapRef.current;
+    }
+
     return () => {
-      mapRef.current?.remove();
-      mapRef.current = null;
+      localMapRef.current?.remove();
+      localMapRef.current = null;
+      if (mapRef) mapRef.current = null;
     };
-  }, []);
+  }, [mapRef]);
 
   return (
     <div

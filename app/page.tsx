@@ -1,21 +1,39 @@
+"use client";
 import dynamic from 'next/dynamic';
 import JourneyPlanner from '@/components/panel/JourneyPlanner';
+import AdvancedDashboardDrawer from '@/components/advanced/AdvancedDashboardDrawer';
+import { useRef, useState } from 'react';
+import { useRoutes } from '@/hooks/useRoutes';
 
-// CRITICAL: MapLibre GL JS requires window — must disable SSR
+const RouteLayer = dynamic(() => import('@/components/map/RouteLayer'), { ssr: false });
+const CarbonSavedWidget = dynamic(() => import('@/components/widgets/CarbonSavedWidget'), { ssr: false });
 const EcoMap = dynamic(() => import('@/components/map/EcoMap'), {
   ssr: false,
   loading: () => (
     <div style={{
-      width: '100%', height: '100%',
+      width: '100%',
+      height: '100%',
       background: '#0d1f12',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
     }}>
       <span style={{ color: '#7a9e7e', fontSize: '14px' }}>Loading map...</span>
     </div>
   ),
 });
+const MarkerLayer = dynamic(() => import('@/components/map/MarkerLayer'), { ssr: false });
 
 export default function HomePage() {
+  const mapRef = useRef(null);
+  const { state, handleOriginChange, handleDestinationChange, handleSelectRoute } = useRoutes();
+  const [tripRefreshTrigger, setTripRefreshTrigger] = useState(0);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
+  const handleTripLogged = () => {
+    setTripRefreshTrigger((prev) => prev + 1);
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -45,11 +63,14 @@ export default function HomePage() {
         }}>
           {/* Logo mark placeholder — replaced in Task 006 */}
           <div style={{
-            width: '32px', height: '32px',
+            width: '32px',
+            height: '32px',
             borderRadius: '8px',
             background: 'var(--eco-surface)',
             border: '1px solid var(--eco-border)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             fontSize: '16px',
           }}>
             🌿
@@ -62,12 +83,36 @@ export default function HomePage() {
         </div>
 
         {/* Journey planner — implemented Task 002 */}
-        <JourneyPlanner />
+        <JourneyPlanner
+          state={state}
+          onOriginChange={handleOriginChange}
+          onDestinationChange={handleDestinationChange}
+          onSelectRoute={handleSelectRoute}
+          onOpenAdvanced={() => setAdvancedOpen(true)}
+          onTripLogged={handleTripLogged}
+          routes={state.routes}
+          selectedRouteId={state.selectedRouteId}
+        />
       </div>
 
       {/* Map panel — 60% width */}
       <div style={{ flex: 1, position: 'relative', height: '100%' }}>
-        <EcoMap />
+        <EcoMap mapRef={mapRef} />
+        <RouteLayer map={mapRef.current} routes={state.routes} activeRouteId={state.selectedRouteId} />
+        <MarkerLayer
+          map={mapRef.current}
+          originCoords={state.originCoords}
+          destinationCoords={state.destinationCoords}
+        />
+        <CarbonSavedWidget refreshTrigger={tripRefreshTrigger} />
+        <AdvancedDashboardDrawer
+          isOpen={advancedOpen}
+          onClose={() => setAdvancedOpen(false)}
+          origin={state.origin}
+          destination={state.destination}
+          originCoords={state.originCoords}
+          destinationCoords={state.destinationCoords}
+        />
       </div>
     </div>
   );
