@@ -624,3 +624,151 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ===== MOBILE RESPONSIVE ===== */
+
+/* Mobile header bar (hidden on desktop) */
+.mobile-header {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Show mobile header */
+  .mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 56px;
+    background: var(--eco-bg);
+    border-bottom: 1px solid var(--eco-border);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1100;
+    flex-shrink: 0;
+  }
+
+  .mobile-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--eco-text);
+    font-size: 17px;
+  }
+
+  .mobile-header-logo span.eco-logo-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--eco-surface);
+    border: 1px solid var(--eco-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  /* Hamburger button */
+  .hamburger-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+
+  .hamburger-btn:active {
+    background: var(--eco-surface);
+  }
+
+  .hamburger-line {
+    width: 22px;
+    height: 2px;
+    background: var(--eco-text);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    transform-origin: center;
+  }
+
+  /* Animate to X when open */
+  .hamburger-btn.open .hamburger-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .hamburger-btn.open .hamburger-line:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .hamburger-btn.open .hamburger-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Main layout shifts: map takes full screen on mobile */
+  .app-layout {
+    flex-direction: column !important;
+    padding-top: 56px;
+  }
+
+  /* Sidebar becomes a fixed slide-in panel */
+  .sidebar-panel {
+    position: fixed !important;
+    top: 56px !important;
+    left: -100% !important;
+    width: 88vw !important;
+    max-width: 360px !important;
+    height: calc(100vh - 56px) !important;
+    z-index: 1050 !important;
+    transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow-y: auto !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5) !important;
+    border-right: 1px solid var(--eco-border) !important;
+  }
+
+  .sidebar-panel.mobile-open {
+    left: 0 !important;
+  }
+
+  /* Map takes full height */
+  .map-panel {
+    width: 100% !important;
+    height: calc(100vh - 56px) !important;
+    flex: none !important;
+  }
+
+  /* Overlay behind the panel */
+  .mobile-overlay {
+    display: none;
+    position: fixed;
+    top: 56px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1040;
+    backdrop-filter: blur(2px);
+  }
+
+  .mobile-overlay.active {
+    display: block;
+  }
+
+  /* Prevent body scroll when panel open */
+  body.panel-open {
+    overflow: hidden;
+  }
+
+  /* Hide the old static header inside sidebar on mobile */
+  .sidebar-logo-bar {
+    display: none;
+  }
+}
+/* ===== END MOBILE RESPONSIVE ===== */

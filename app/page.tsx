@@ -2,7 +2,7 @@
 import dynamic from 'next/dynamic';
 import JourneyPlanner from '@/components/panel/JourneyPlanner';
 import AdvancedDashboardDrawer from '@/components/advanced/AdvancedDashboardDrawer';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useRoutes } from '@/hooks/useRoutes';
 
 const RouteLayer = dynamic(() => import('@/components/map/RouteLayer'), { ssr: false });
@@ -29,38 +29,92 @@ export default function HomePage() {
   const { state, handleOriginChange, handleDestinationChange, handleSelectRoute, handleModeChange } = useRoutes();
   const [tripRefreshTrigger, setTripRefreshTrigger] = useState(0);
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
 
   const handleTripLogged = () => {
     setTripRefreshTrigger((prev) => prev + 1);
   };
 
+  const openPanel = () => {
+    setMobilePanelOpen(true);
+    document.body.classList.add('panel-open');
+  };
+
+  const closePanel = () => {
+    setMobilePanelOpen(false);
+    document.body.classList.remove('panel-open');
+  };
+
+  const togglePanel = () => {
+    mobilePanelOpen ? closePanel() : openPanel();
+  };
+
   return (
     <div style={{
-      display: 'flex',
       height: '100vh',
       overflow: 'hidden',
       background: 'var(--eco-bg)',
     }}>
-      {/* Left panel — 40% width on desktop, bottom sheet on mobile */}
-      <div style={{
-        width: '40%',
-        minWidth: '320px',
-        maxWidth: '480px',
-        height: '100%',
-        overflowY: 'auto',
-        background: 'var(--eco-bg)',
-        borderRight: '1px solid var(--eco-border)',
-        zIndex: 10,
-        flexShrink: 0,
-      }}>
-        {/* Header */}
-        <div style={{
-          padding: '16px 20px',
-          borderBottom: '1px solid var(--eco-border)',
+      {/* Mobile-only header */}
+      <header className="mobile-header">
+        <div className="mobile-header-logo">
+          <span className="eco-logo-icon">🌿</span>
+          <span>
+            <span style={{ fontWeight: 400 }}>eco</span>
+            <span style={{ fontWeight: 700 }}>route</span>
+          </span>
+        </div>
+        <button
+          className={`hamburger-btn ${mobilePanelOpen ? 'open' : ''}`}
+          onClick={togglePanel}
+          aria-label="Toggle menu"
+        >
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+        </button>
+      </header>
+
+      {/* Mobile overlay */}
+      <div
+        className={`mobile-overlay ${mobilePanelOpen ? 'active' : ''}`}
+        onClick={closePanel}
+      />
+
+      <div
+        className="app-layout"
+        style={{
           display: 'flex',
-          alignItems: 'center',
-          gap: '10px',
-        }}>
+          height: '100%',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Left panel — 40% width on desktop, bottom sheet on mobile */}
+        <div
+          className={`sidebar-panel ${mobilePanelOpen ? 'mobile-open' : ''}`}
+          style={{
+            width: '40%',
+            minWidth: '320px',
+            maxWidth: '480px',
+            height: '100%',
+            overflowY: 'auto',
+            background: 'var(--eco-bg)',
+            borderRight: '1px solid var(--eco-border)',
+            zIndex: 10,
+            flexShrink: 0,
+          }}
+        >
+          {/* Header */}
+          <div
+            className="sidebar-logo-bar"
+            style={{
+              padding: '16px 20px',
+              borderBottom: '1px solid var(--eco-border)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
           {/* Logo mark placeholder — replaced in Task 006 */}
           <div style={{
             width: '32px',
@@ -80,7 +134,7 @@ export default function HomePage() {
             <span style={{ fontWeight: 400 }}>eco</span>
             <span style={{ fontWeight: 700 }}>route</span>
           </span>
-        </div>
+          </div>
 
         {/* Journey planner — implemented Task 002 */}
         <JourneyPlanner
@@ -94,26 +148,27 @@ export default function HomePage() {
           routes={state.routes}
           selectedRouteId={state.selectedRouteId}
         />
-      </div>
+        </div>
 
-      {/* Map panel — 60% width */}
-      <div style={{ flex: 1, position: 'relative', height: '100%' }}>
-        <EcoMap mapRef={mapRef} />
-        <RouteLayer map={mapRef.current} routes={state.routes} activeRouteId={state.selectedRouteId} />
-        <MarkerLayer
-          map={mapRef.current}
-          originCoords={state.originCoords}
-          destinationCoords={state.destinationCoords}
-        />
-        <CarbonSavedWidget refreshTrigger={tripRefreshTrigger} />
-        <AdvancedDashboardDrawer
-          isOpen={advancedOpen}
-          onClose={() => setAdvancedOpen(false)}
-          origin={state.origin}
-          destination={state.destination}
-          originCoords={state.originCoords}
-          destinationCoords={state.destinationCoords}
-        />
+        {/* Map panel — 60% width */}
+        <div className="map-panel" style={{ flex: 1, position: 'relative', height: '100%' }}>
+          <EcoMap mapRef={mapRef} />
+          <RouteLayer map={mapRef.current} routes={state.routes} activeRouteId={state.selectedRouteId} />
+          <MarkerLayer
+            map={mapRef.current}
+            originCoords={state.originCoords}
+            destinationCoords={state.destinationCoords}
+          />
+          <CarbonSavedWidget refreshTrigger={tripRefreshTrigger} />
+          <AdvancedDashboardDrawer
+            isOpen={advancedOpen}
+            onClose={() => setAdvancedOpen(false)}
+            origin={state.origin}
+            destination={state.destination}
+            originCoords={state.originCoords}
+            destinationCoords={state.destinationCoords}
+          />
+        </div>
       </div>
     </div>
   );

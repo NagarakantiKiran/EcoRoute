@@ -240,3 +240,22 @@ function highlightRoute(idx) {
 - [ ] Switch vehicle to **Electric / Bicycle / Walking** → still 3 cards, CO₂ changes correctly
 - [ ] **Swap, Clear, Use My Location** all still work
 - [ ] Advanced Dashboard button still opens the drawer normally
+
+---
+
+## Lesson Documentation (Brief)
+
+### What Changed
+- Collapsed the routes list to always show three strategies: Fastest, Eco, Alternative.
+- Removed the eco score bar and kept the A/B/C/D grade label as the primary eco indicator.
+- Added a vehicle selector UI as cards (instead of dropdown) to keep mode selection but still display only three route cards.
+
+### Issues Faced
+- Existing logic fetched alternatives for multiple modes, which produced 9 cards.
+- UI originally grouped routes by mode, which conflicted with the three-card requirement.
+- Mode selection needed to stay available without reintroducing extra cards.
+
+### How We Resolved Them
+- Updated route fetching to use the selected mode only and derive three strategies from alternatives.
+- Simplified the routes list rendering to a single ordered set of three cards.
+- Implemented mode selection as a 2x2 card grid to match the desired UI while keeping the three-card results.
