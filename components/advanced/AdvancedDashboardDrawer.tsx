@@ -72,6 +72,28 @@ type GeoSuggestion = {
   lat: number;
 };
 
+type OsrmRoute = {
+  distance: number;
+  duration: number;
+};
+
+type OsrmRouteResponse = {
+  code?: string;
+  routes?: OsrmRoute[];
+};
+
+type PositionstackItem = {
+  label?: string;
+  name?: string;
+  country?: string;
+  latitude: number;
+  longitude: number;
+};
+
+type PositionstackResponse = {
+  data?: PositionstackItem[];
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -252,7 +274,8 @@ export default function AdvancedDashboardDrawer({
       }));
 
       setMultiOptions(options);
-    } catch (err) {
+    } catch (error) {
+      console.error("Failed to fetch multimodal routes:", error);
       setMultiError("Failed to fetch multimodal routes.");
     }
   };
@@ -265,13 +288,13 @@ export default function AdvancedDashboardDrawer({
       const res = await fetch(
         `${OSRM_BASE}/route/v1/driving/${start};${end}?alternatives=true&overview=full&geometries=geojson`
       );
-      const data = await res.json();
+      const data: OsrmRouteResponse = await res.json();
       if (data.code !== "Ok") {
         setAltError("No alternative routes found.");
         return;
       }
 
-      const routes = (data.routes || []).slice(0, 3).map((route: any, idx: number) => {
+      const routes = (data.routes || []).slice(0, 3).map((route, idx) => {
         const distanceKm = Number(kilometers(route.distance));
         const co2Kg = calculateCO2(route.distance, "driving");
         const score = distanceKm === 0 ? 0 : Math.max(0, 100 - (co2Kg / distanceKm) * 50);
@@ -500,8 +523,8 @@ export default function AdvancedDashboardDrawer({
 
     try {
       const res = await fetch(url);
-      const data = await res.json();
-      return (data.data || []).map((item: any) => ({
+      const data: PositionstackResponse = await res.json();
+      return (data.data || []).map((item) => ({
         label: item.label || `${item.name}, ${item.country}`,
         lon: item.longitude,
         lat: item.latitude,

@@ -38,7 +38,7 @@ export default function JourneyPlanner({
     borderRadius: '10px',
     padding: '12px 16px',
     color: 'var(--eco-text)',
-    fontSize: '15px',
+    fontSize: '16px',
     outline: 'none',
     boxSizing: 'border-box',
     fontFamily: 'inherit',
@@ -48,6 +48,7 @@ export default function JourneyPlanner({
     <div style={{ padding: '20px' }}>
       {/* Section label */}
       <div
+        className="section-label"
         style={{
           fontSize: '10px',
           textTransform: 'uppercase',
@@ -62,6 +63,7 @@ export default function JourneyPlanner({
 
       {/* Card */}
       <div
+        className="journey-card"
         style={{
           background: 'var(--eco-surface)',
           borderRadius: '16px',
@@ -119,6 +121,7 @@ export default function JourneyPlanner({
             <span>Select Vehicle</span>
           </div>
           <div
+            className="vehicle-grid"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
@@ -137,6 +140,7 @@ export default function JourneyPlanner({
                   key={option.mode}
                   type="button"
                   onClick={() => onModeChange(option.mode as JourneyState['selectedMode'])}
+                  className="vehicle-card"
                   style={{
                     minHeight: '72px',
                     borderRadius: '12px',
@@ -155,10 +159,13 @@ export default function JourneyPlanner({
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <span style={{ fontSize: '22px', color: isActive ? 'var(--eco-green)' : 'var(--eco-text)' }}>
+                  <span
+                    className="vehicle-icon"
+                    style={{ fontSize: '22px', color: isActive ? 'var(--eco-green)' : 'var(--eco-text)' }}
+                  >
                     {option.icon}
                   </span>
-                  <span>{option.label}</span>
+                  <span className="vehicle-label">{option.label}</span>
                 </button>
               );
             })}
@@ -175,6 +182,7 @@ export default function JourneyPlanner({
         {/* Eco Mode Badge */}
         {(state.origin || state.destination) && (
           <div
+            className="eco-mode-badge"
             onClick={() => setEcoModeActive(!ecoModeActive)}
             style={{
               display: 'inline-flex',
@@ -195,33 +203,35 @@ export default function JourneyPlanner({
         )}
       </div>
 
-      {/* Routes section */}
-      {state.routes.length > 0 && (
-        <>
-          <RouteOptions
-            routes={state.routes}
-            selectedRouteId={state.selectedRouteId}
-            onSelectRoute={onSelectRoute}
-            isLoading={state.isLoading}
-          />
-
-          {/* CTA Button */}
-          <div style={{ padding: '0 20px 20px' }}>
-            <StartButton
-              selectedRoute={selectedRoute}
-              origin={state.origin}
-              destination={state.destination}
-              disabled={!state.routes.length || state.isLoading}
-              onTripLogged={onTripLogged}
+      <div className="route-options-section">
+        {/* Routes section */}
+        {state.routes.length > 0 && (
+          <>
+            <RouteOptions
+              routes={state.routes}
+              selectedRouteId={state.selectedRouteId}
+              onSelectRoute={onSelectRoute}
+              isLoading={state.isLoading}
             />
-          </div>
-        </>
-      )}
 
-      <div style={{ padding: "0 20px 20px" }}>
-        <button className="btn-advanced" onClick={onOpenAdvanced}>
-          Advanced Dashboard
-        </button>
+            {/* CTA Button */}
+            <div style={{ padding: '0 20px 20px' }}>
+              <StartButton
+                selectedRoute={selectedRoute}
+                origin={state.origin}
+                destination={state.destination}
+                disabled={!state.routes.length || state.isLoading}
+                onTripLogged={onTripLogged}
+              />
+            </div>
+          </>
+        )}
+
+        <div style={{ padding: '0 20px 20px' }}>
+          <button className="btn-advanced" onClick={onOpenAdvanced}>
+            Advanced Dashboard
+          </button>
+        </div>
       </div>
     </div>
   );

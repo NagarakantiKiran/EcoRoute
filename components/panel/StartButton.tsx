@@ -73,6 +73,7 @@ export default function StartButton({
 
   return (
     <button
+      className="start-btn"
       onClick={handleStartTrip}
       disabled={isDisabled}
       style={{

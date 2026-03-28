@@ -1,27 +1,30 @@
 {
   "app\\page.tsx -> @/components/map/EcoMap": {
-    "id": "app\\page.tsx -> @/components/map/EcoMap",
+    "id": 2556,
     "files": [
-      "static/css/_app-pages-browser_components_map_EcoMap_tsx.css",
-      "static/chunks/_app-pages-browser_components_map_EcoMap_tsx.js"
+      "static/css/ca1bd6a856a82933.css",
+      "static/chunks/05f6971a.3df8ac59a772023e.js",
+      "static/chunks/556.96fb1a6a7e44cc8d.js"
     ]
   },
   "app\\page.tsx -> @/components/map/MarkerLayer": {
-    "id": "app\\page.tsx -> @/components/map/MarkerLayer",
+    "id": 7150,
     "files": [
-      "static/chunks/_app-pages-browser_components_map_MarkerLayer_tsx.js"
+      "static/chunks/05f6971a.3df8ac59a772023e.js",
+      "static/chunks/150.6524fc1d3be8f25e.js"
     ]
   },
   "app\\page.tsx -> @/components/map/RouteLayer": {
-    "id": "app\\page.tsx -> @/components/map/RouteLayer",
+    "id": 6501,
     "files": [
-      "static/chunks/_app-pages-browser_components_map_RouteLayer_tsx.js"
+      "static/chunks/05f6971a.3df8ac59a772023e.js",
+      "static/chunks/501.a17bb2172022be92.js"
     ]
   },
   "app\\page.tsx -> @/components/widgets/CarbonSavedWidget": {
-    "id": "app\\page.tsx -> @/components/widgets/CarbonSavedWidget",
+    "id": 7273,
     "files": [
-      "static/chunks/_app-pages-browser_components_widgets_CarbonSavedWidget_tsx.js"
+      "static/chunks/273.1381fa336e4f9b69.js"
     ]
   }
 }

@@ -39,8 +39,9 @@ export default function RouteOptions({ routes, selectedRouteId, onSelectRoute, i
   );
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div className="route-options-wrapper" style={{ padding: '20px' }}>
       <div
+        className="section-label"
         style={{
           fontSize: '10px',
           textTransform: 'uppercase',
@@ -53,7 +54,7 @@ export default function RouteOptions({ routes, selectedRouteId, onSelectRoute, i
         Route Options
       </div>
 
-      <div>
+      <div className="route-cards-container">
         {orderedRoutes.map((route) => (
           <RouteCard
             key={route.id}

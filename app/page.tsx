@@ -46,7 +46,11 @@ export default function HomePage() {
   };
 
   const togglePanel = () => {
-    mobilePanelOpen ? closePanel() : openPanel();
+    if (mobilePanelOpen) {
+      closePanel();
+    } else {
+      openPanel();
+    }
   };
 
   return (

@@ -20,17 +20,10 @@ const STRATEGY_DETAILS: Record<string, { label: string; icon: string }> = {
   alternative: { label: 'Alternative', icon: '🛣️' },
 };
 
-const STRATEGY_COLORS: Record<string, string> = {
-  fastest: '#3b82f6',
-  eco: '#10b981',
-  alternative: '#f59e0b',
-};
-
 export default function RouteCard({ route, isSelected, onSelect }: Props) {
   const durationMinutes = Math.round(route.durationSeconds / 60);
   const distanceKm = (route.distanceMeters / 1000).toFixed(1);
   const gradeColor = GRADE_COLORS[route.ecoGrade as EcoGrade];
-  const strategyColor = STRATEGY_COLORS[route.strategy] || '#52b788';
   const strategyDetails = STRATEGY_DETAILS[route.strategy] || {
     label: 'Route',
     icon: '🛣️',
@@ -40,84 +33,61 @@ export default function RouteCard({ route, isSelected, onSelect }: Props) {
     <div
       onClick={onSelect}
       style={{
-        background: isSelected ? 'var(--eco-surface)' : 'var(--eco-bg)',
-        border: `2px solid ${isSelected ? strategyColor : 'var(--eco-border)'}`,
+        background: isSelected ? 'var(--eco-bg)' : 'var(--eco-surface)',
+        border: `2px solid ${isSelected ? 'var(--eco-green)' : 'var(--eco-border)'}`,
         borderRadius: '12px',
         padding: '16px',
         marginBottom: '12px',
         cursor: 'pointer',
         transition: 'all 0.3s ease-out, box-shadow 0.6s ease-out',
-        opacity: isSelected ? 1 : 0.7,
-        ...(isSelected && {
-          boxShadow: `0 4px 12px ${strategyColor}40, 0 0 20px ${strategyColor}20`,
-        }),
+        opacity: isSelected ? 1 : 0.9,
+        boxShadow: isSelected ? '0 6px 18px rgba(82, 183, 136, 0.22)' : 'none',
       }}
-      className={isSelected ? 'route-card-container active' : 'route-card-container'}
+      className={isSelected ? 'route-card route-card-container active' : 'route-card route-card-container'}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
-          {/* Icon */}
-          <div style={{ fontSize: '28px' }}>
-            {strategyDetails.icon}
-          </div>
-
-          {/* Main info */}
-          <div style={{ flex: 1 }}>
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 600,
-                color: 'var(--eco-text)',
-                marginBottom: '4px',
-                display: 'flex',
-                gap: '8px',
-                alignItems: 'center',
-              }}
-            >
-              {strategyDetails.label}
-            </div>
-
-            <div style={{ fontSize: '12px', color: 'var(--eco-muted)', marginBottom: '8px' }}>
-              {distanceKm} km • {durationMinutes} min
-            </div>
-
-            {/* Grade label */}
-            <div
-              style={{
-                fontSize: '11px',
-                color: gradeColor,
-                fontWeight: 600,
-                textTransform: 'uppercase',
-              }}
-            >
-              Grade {route.ecoGrade} — {GRADE_LABELS[route.ecoGrade as EcoGrade]}
-            </div>
-          </div>
+      <div
+        className="route-card-header"
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          gap: '8px',
+        }}
+      >
+        <div style={{ fontSize: '26px', color: isSelected ? 'var(--eco-green)' : 'var(--eco-text)' }}>
+          {strategyDetails.icon}
         </div>
-
-        {/* CO₂ value */}
-        <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: gradeColor }}>
-            {route.co2Kg.toFixed(2)} kg
-          </div>
-          <div style={{ fontSize: '11px', color: 'var(--eco-muted)', marginTop: '2px' }}>
-            CO₂
-          </div>
-          {route.co2SavedKg > 0 && (
-            <div
-              style={{
-                fontSize: '11px',
-                color: 'var(--eco-green)',
-                marginTop: '4px',
-                fontWeight: 500,
-              }}
-            >
-              Saves {route.co2SavedKg.toFixed(2)} kg
-            </div>
-          )}
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--eco-text)' }}>
+          {strategyDetails.label}
         </div>
+        <div className="route-stats" style={{ fontSize: '12px', color: 'var(--eco-muted)' }}>
+          {distanceKm} km • {durationMinutes} min
+        </div>
+        <div style={{ fontSize: '16px', fontWeight: 700, color: gradeColor }}>
+          {route.co2Kg.toFixed(2)} kg
+        </div>
+        <div style={{ fontSize: '11px', color: 'var(--eco-muted)', marginTop: '-2px' }}>
+          CO₂
+        </div>
+        <div
+          className="route-grade"
+          style={{
+            fontSize: '11px',
+            color: gradeColor,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            marginTop: '6px',
+          }}
+        >
+          Grade {route.ecoGrade} — {GRADE_LABELS[route.ecoGrade as EcoGrade]}
+        </div>
+        {route.co2SavedKg > 0 && (
+          <div style={{ fontSize: '11px', color: 'var(--eco-green)', marginTop: '4px', fontWeight: 500 }}>
+            Saves {route.co2SavedKg.toFixed(2)} kg
+          </div>
+        )}
       </div>
-
     </div>
   );
 }
