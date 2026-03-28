@@ -52,7 +52,7 @@ export default function TripHistory({ onClear }: Props) {
           No trips logged yet
         </div>
         <div style={{ fontSize: '13px' }}>
-          Plan a route and tap "Start" to log your first trip
+          Plan a route and tap &ldquo;Start&rdquo; to log your first trip
         </div>
       </div>
     );

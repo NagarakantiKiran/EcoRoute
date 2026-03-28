@@ -20,8 +20,15 @@ export default function WeatherWidget({
   const [destWeather, setDestWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const originLon = originCoords?.[0] ?? null;
+  const originLat = originCoords?.[1] ?? null;
+  const destinationLon = destinationCoords?.[0] ?? null;
+  const destinationLat = destinationCoords?.[1] ?? null;
+
   useEffect(() => {
-    if (!originCoords && !destinationCoords) return;
+    if (originLon === null && originLat === null && destinationLon === null && destinationLat === null) {
+      return;
+    }
 
     setLoading(true);
     setOriginWeather(null);
@@ -29,25 +36,20 @@ export default function WeatherWidget({
 
     const fetches: Promise<void>[] = [];
 
-    if (originCoords) {
+    if (originLon !== null && originLat !== null) {
       fetches.push(
-        getWeather(originCoords[1], originCoords[0]).then((weather) => setOriginWeather(weather))
+        getWeather(originLat, originLon).then((weather) => setOriginWeather(weather))
       );
     }
 
-    if (destinationCoords) {
+    if (destinationLon !== null && destinationLat !== null) {
       fetches.push(
-        getWeather(destinationCoords[1], destinationCoords[0]).then((weather) => setDestWeather(weather))
+        getWeather(destinationLat, destinationLon).then((weather) => setDestWeather(weather))
       );
     }
 
     Promise.all(fetches).finally(() => setLoading(false));
-  }, [
-    originCoords?.[0],
-    originCoords?.[1],
-    destinationCoords?.[0],
-    destinationCoords?.[1],
-  ]);
+  }, [originLon, originLat, destinationLon, destinationLat]);
 
   if (!originCoords && !destinationCoords) return null;
 
