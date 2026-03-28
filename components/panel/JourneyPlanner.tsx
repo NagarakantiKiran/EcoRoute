@@ -1,9 +1,11 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { JourneyState, RouteResult } from '@/types';
 import RouteOptions from './RouteOptions';
 import StartButton from './StartButton';
+import WeatherWidget from '@/components/widgets/WeatherWidget';
 
 interface Props {
   state: JourneyState;
@@ -203,6 +205,15 @@ export default function JourneyPlanner({
         )}
       </div>
 
+      {(state.originCoords || state.destinationCoords) && (
+        <WeatherWidget
+          originCoords={state.originCoords}
+          destinationCoords={state.destinationCoords}
+          originName={state.origin}
+          destinationName={state.destination}
+        />
+      )}
+
       <div className="route-options-section">
         {/* Routes section */}
         {state.routes.length > 0 && (
@@ -231,6 +242,41 @@ export default function JourneyPlanner({
           <button className="btn-advanced" onClick={onOpenAdvanced}>
             Advanced Dashboard
           </button>
+        </div>
+
+        <div style={{ padding: '0 20px 24px' }}>
+          <Link
+            href="/dashboard"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '12px',
+              textAlign: 'left',
+              color: '#ffd7ef',
+              fontSize: '13px',
+              padding: '14px 16px',
+              textDecoration: 'none',
+              borderTop: '1px solid rgba(82,183,136,0.1)',
+              marginTop: '8px',
+              minHeight: '44px',
+              borderRadius: '14px',
+              background: 'linear-gradient(135deg, rgba(255,126,185,0.18), rgba(255,214,240,0.08))',
+              border: '1px solid rgba(255,126,185,0.35)',
+              boxShadow: '0 10px 24px rgba(255, 126, 185, 0.12)',
+            }}
+          >
+            <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ fontSize: '18px' }}>📊</span>
+              <span>
+                <span style={{ fontWeight: 700 }}>View Carbon Dashboard</span>
+                <span style={{ display: 'block', color: '#f6b7da', fontSize: '11px', marginTop: '4px' }}>
+                  Your trips, savings, and impact
+                </span>
+              </span>
+            </span>
+            <span style={{ color: '#ff9ad5', fontSize: '16px' }}>→</span>
+          </Link>
         </div>
       </div>
     </div>

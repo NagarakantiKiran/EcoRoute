@@ -15,11 +15,12 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
 
   useEffect(() => {
     if (!map) return;
+    const mapInstance = map;
 
     // Remove previous layers and sources
     layerIdsRef.current.forEach((id) => {
-      if (map.getLayer(id)) map.removeLayer(id);
-      if (map.getSource(id)) map.removeSource(id);
+      if (mapInstance?.getLayer(id)) mapInstance.removeLayer(id);
+      if (mapInstance?.getSource(id)) mapInstance.removeSource(id);
     });
     layerIdsRef.current = [];
 
@@ -41,7 +42,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
         ev: 3,
       };
 
-      map.addSource(id, {
+      mapInstance.addSource(id, {
         type: 'geojson',
         data: {
           type: 'Feature',
@@ -50,7 +51,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
         },
       });
 
-      map.addLayer({
+      mapInstance.addLayer({
         id,
         type: 'line',
         source: id,
@@ -69,9 +70,10 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     });
 
     return () => {
+      if (!mapInstance) return;
       layerIdsRef.current.forEach((id) => {
-        if (map.getLayer(id)) map.removeLayer(id);
-        if (map.getSource(id)) map.removeSource(id);
+        if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
+        if (mapInstance.getSource(id)) mapInstance.removeSource(id);
       });
       layerIdsRef.current = [];
     };
@@ -83,7 +85,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     // Update active/inactive styling and bring active to front
     routes.forEach((route) => {
       const id = `route-${route.id}`;
-      if (!map.getLayer(id)) return;
+      if (!map?.getLayer(id)) return;
 
       const isActive = activeRouteId === route.id;
       const baseWidth: Record<string, number> = {
@@ -120,7 +122,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     if (!activeRouteId) return;
 
     const activeLayerId = `route-${activeRouteId}`;
-    if (!map.getLayer(activeLayerId)) return;
+    if (!map?.getLayer(activeLayerId)) return;
 
     let tick = 0;
     if (pulseIntervalRef.current) {
@@ -130,7 +132,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     pulseIntervalRef.current = window.setInterval(() => {
       const dash = tick % 2 === 0 ? [2, 2] : [1, 3];
       const width = tick % 2 === 0 ? 7 : 5;
-      if (map.getLayer(activeLayerId)) {
+      if (map?.getLayer(activeLayerId)) {
         map.setPaintProperty(activeLayerId, 'line-dasharray', dash);
         map.setPaintProperty(activeLayerId, 'line-width', width);
       }

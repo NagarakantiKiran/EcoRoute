@@ -859,6 +859,11 @@ body {
     background: var(--eco-surface);
   }
 
+  .weather-widget-cards {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
   .hamburger-line {
     width: 22px;
     height: 2px;

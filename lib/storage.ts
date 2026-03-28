@@ -1,11 +1,7 @@
-import { Trip, FootprintSummary } from '@/types';
+import { Trip, FootprintSummary, TransportMode } from '@/types';
 
-// localStorage keys (all prefixed with 'ecoroute:')
-const KEYS = {
-  TRIPS: 'ecoroute:trips',
-  FOOTPRINT: 'ecoroute:footprint',
-  PREFS: 'ecoroute:preferences',
-} as const;
+const TRIPS_KEY = 'ecoroute:trips';
+const MAX_TRIPS = 100;
 
 const DEFAULT_FOOTPRINT: FootprintSummary = {
   totalCO2SavedKg: 0,
@@ -19,79 +15,94 @@ const DEFAULT_FOOTPRINT: FootprintSummary = {
   lastUpdated: Date.now(),
 };
 
-/**
- * Save a new trip to localStorage and recalculate footprint
- */
+// ---- Save a trip ----
 export function saveTrip(trip: Trip): void {
+  if (typeof window === 'undefined') return;
   try {
-    const existing = getTrips();
-    // Keep only last 100 trips
-    const updated = [trip, ...existing].slice(0, 100);
-    localStorage.setItem(KEYS.TRIPS, JSON.stringify(updated));
-    recalculateFootprint(updated);
+    const trips = getTrips();
+    trips.unshift(trip);
+    const trimmed = trips.slice(0, MAX_TRIPS);
+    localStorage.setItem(TRIPS_KEY, JSON.stringify(trimmed));
   } catch (err) {
     console.error('Failed to save trip:', err);
   }
 }
 
-/**
- * Get all trips from localStorage
- */
+// ---- Get all trips ----
 export function getTrips(): Trip[] {
+  if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(KEYS.TRIPS);
-    return raw ? JSON.parse(raw) : [];
+    const raw = localStorage.getItem(TRIPS_KEY);
+    return raw ? (JSON.parse(raw) as Trip[]) : [];
   } catch (err) {
     console.error('Failed to get trips:', err);
     return [];
   }
 }
 
-/**
- * Get current footprint summary
- */
-export function getFootprint(): FootprintSummary {
+// ---- Clear all trips ----
+export function clearTrips(): void {
+  if (typeof window === 'undefined') return;
   try {
-    const raw = localStorage.getItem(KEYS.FOOTPRINT);
-    return raw ? JSON.parse(raw) : DEFAULT_FOOTPRINT;
-  } catch (err) {
-    console.error('Failed to get footprint:', err);
-    return DEFAULT_FOOTPRINT;
-  }
-}
-
-/**
- * Recalculate and save footprint summary based on trips
- */
-function recalculateFootprint(trips: Trip[]): void {
-  try {
-    const summary: FootprintSummary = {
-      totalCO2SavedKg: trips.reduce((sum, t) => sum + t.co2SavedKg, 0),
-      totalTrips: trips.length,
-      tripsByMode: {
-        walking: trips.filter((t) => t.mode === 'walking').length,
-        cycling: trips.filter((t) => t.mode === 'cycling').length,
-        driving: trips.filter((t) => t.mode === 'driving').length,
-        ev: trips.filter((t) => t.mode === 'ev').length,
-      },
-      lastUpdated: Date.now(),
-    };
-    localStorage.setItem(KEYS.FOOTPRINT, JSON.stringify(summary));
-  } catch (err) {
-    console.error('Failed to recalculate footprint:', err);
-  }
-}
-
-/**
- * Clear all trips (debug only)
- */
-export function clearAllTrips(): void {
-  try {
-    localStorage.removeItem(KEYS.TRIPS);
-    localStorage.removeItem(KEYS.FOOTPRINT);
+    localStorage.removeItem(TRIPS_KEY);
   } catch (err) {
     console.error('Failed to clear trips:', err);
   }
+}
+
+// ---- Calculate footprint summary from trips ----
+export function getFootprint(): FootprintSummary {
+  const trips = getTrips();
+
+  const tripsByMode: Record<TransportMode, number> = {
+    walking: 0,
+    cycling: 0,
+    driving: 0,
+    ev: 0,
+  };
+
+  let totalCO2SavedKg = 0;
+
+  trips.forEach((trip) => {
+    tripsByMode[trip.mode] = (tripsByMode[trip.mode] || 0) + 1;
+    totalCO2SavedKg += trip.co2SavedKg;
+  });
+
+  if (trips.length === 0) {
+    return {
+      ...DEFAULT_FOOTPRINT,
+      lastUpdated: Date.now(),
+    };
+  }
+
+  return {
+    totalCO2SavedKg: parseFloat(totalCO2SavedKg.toFixed(3)),
+    totalTrips: trips.length,
+    tripsByMode,
+    lastUpdated: Date.now(),
+  };
+}
+
+// ---- CO2 saved per mode (for bar chart) ----
+export function getCO2SavedByMode(): Record<TransportMode, number> {
+  const trips = getTrips();
+  const result: Record<TransportMode, number> = {
+    walking: 0,
+    cycling: 0,
+    driving: 0,
+    ev: 0,
+  };
+
+  trips.forEach((trip) => {
+    result[trip.mode] = parseFloat(((result[trip.mode] || 0) + trip.co2SavedKg).toFixed(3));
+  });
+
+  return result;
+}
+
+// Backward-compatible alias used in older code
+export function clearAllTrips(): void {
+  clearTrips();
 }
 
 /**
