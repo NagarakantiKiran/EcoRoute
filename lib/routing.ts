@@ -1,21 +1,23 @@
-import { RouteResult } from '@/types';
+import { RouteResult, TransportMode } from '@/types';
 import { calculateCO2, calculateCO2Saved } from '@/lib/co2';
 import { getEcoGrade } from '@/lib/ecoGrade';
 import { EMISSION_FACTORS } from '@/config/emissions';
 import type * as GeoJSON from 'geojson';
 
 // Map our modes to ORS profiles
-const PROFILE_MAP: Record<string, string> = {
+const PROFILE_MAP: Record<TransportMode, string> = {
   walking: 'foot-walking',
   cycling: 'cycling-regular',
   driving: 'driving-car',
+  ev: 'driving-car',
 };
 
 // OSRM profiles (fallback when ORS rate limits)
-const OSRM_PROFILE_MAP: Record<string, string> = {
+const OSRM_PROFILE_MAP: Record<TransportMode, string> = {
   walking: 'foot',
   cycling: 'bike',
   driving: 'car',
+  ev: 'car',
 };
 
 /**
@@ -47,7 +49,7 @@ interface OSRMRouteResponse {
 async function fetchRouteWithFallback(
   origin: [number, number],
   destination: [number, number],
-  mode: 'walking' | 'cycling' | 'driving'
+  mode: TransportMode
 ): Promise<ORSRouteResponse> {
   try {
     // Try ORS first — request alternatives for multiple route variants
@@ -88,7 +90,7 @@ async function fetchRouteWithFallback(
 async function fetchOSRMRoute(
   origin: [number, number],
   destination: [number, number],
-  mode: 'walking' | 'cycling' | 'driving'
+  mode: TransportMode
 ): Promise<ORSRouteResponse> {
   const profile = OSRM_PROFILE_MAP[mode];
   const url = `https://router.project-osrm.org/route/v1/${profile}/${origin[0]},${origin[1]};${destination[0]},${destination[1]}?geometries=geojson&overview=full&alternatives=true`;
@@ -120,106 +122,96 @@ async function fetchOSRMRoute(
 
 export async function fetchRoutes(
   origin: [number, number],
-  destination: [number, number]
+  destination: [number, number],
+  mode: TransportMode
 ): Promise<RouteResult[]> {
-  // Fetch all 3 modes in parallel
-  const modes: Array<'walking' | 'cycling' | 'driving'> = ['walking', 'cycling', 'driving'];
+  try {
+    let data = await fetchRouteWithFallback(origin, destination, mode);
 
-  const results = await Promise.all(
-    modes.flatMap((mode) =>
-      (async () => {
-        try {
-          let data = await fetchRouteWithFallback(origin, destination, mode);
+    // Extract all route alternatives
+    let features = data.features || [];
+    if (features.length < 2) {
+      try {
+        console.warn(`ORS returned limited alternatives for ${mode}, trying OSRM...`);
+        data = await fetchOSRMRoute(origin, destination, mode);
+        features = data.features || [];
+      } catch (fallbackErr) {
+        console.warn(`OSRM fallback failed for ${mode}, using ORS result.`, fallbackErr);
+      }
+    }
+    if (features.length === 0) {
+      throw new Error(`No route geometry found for ${mode}`);
+    }
 
-          // Extract all route alternatives
-          let features = data.features || [];
-          if (features.length < 2) {
-            try {
-              console.warn(`ORS returned limited alternatives for ${mode}, trying OSRM...`);
-              data = await fetchOSRMRoute(origin, destination, mode);
-              features = data.features || [];
-            } catch (fallbackErr) {
-              console.warn(`OSRM fallback failed for ${mode}, using ORS result.`, fallbackErr);
-            }
-          }
-          if (features.length === 0) {
-            throw new Error(`No route geometry found for ${mode}`);
-          }
+    // Build route objects from alternatives
+    // We want: fastest (1st/primary), eco (shortest by distance), alternative (2nd if exists)
+    const routesByStrategy = features.map((feature, idx) => {
+      const distanceMeters = feature.properties.summary.distance;
+      const durationSeconds = feature.properties.summary.duration;
+      const geometry = feature.geometry;
 
-          // Build route objects from alternatives
-          // We want: fastest (1st/primary), eco (shortest by distance), alternative (2nd if exists)
-          const routesByStrategy = features.map((feature, idx) => {
-            const distanceMeters = feature.properties.summary.distance;
-            const durationSeconds = feature.properties.summary.duration;
-            const geometry = feature.geometry;
+      return {
+        distanceMeters,
+        durationSeconds,
+        geometry,
+        idx,
+      };
+    });
 
-            return {
-              distanceMeters,
-              durationSeconds,
-              geometry,
-              idx,
-            };
-          });
+    // Sort by distance to identify eco (shortest) route
+    const routesByDistance = [...routesByStrategy].sort(
+      (a, b) => a.distanceMeters - b.distanceMeters
+    );
 
-          // Sort by distance to identify eco (shortest) route
-          const routesByDistance = [...routesByStrategy].sort(
-            (a, b) => a.distanceMeters - b.distanceMeters
-          );
+    // Strategy 1: Fastest = primary route (index 0)
+    const fastest = routesByStrategy[0];
 
-          // Strategy 1: Fastest = primary route (index 0)
-          const fastest = routesByStrategy[0];
+    // Strategy 2: Eco = shortest by distance
+    const eco = routesByDistance[0];
 
-          // Strategy 2: Eco = shortest by distance
-          const eco = routesByDistance[0];
+    // Strategy 3: Alternative = second route if available, else primary
+    const alternative = routesByStrategy[1] || routesByStrategy[0];
 
-          // Strategy 3: Alternative = second route if available, else primary
-          const alternative = routesByStrategy[1] || routesByStrategy[0];
+    const strategies = [
+      { raw: fastest, type: 'fastest' as const, label: 'Fastest Route' },
+      { raw: eco, type: 'eco' as const, label: 'Eco Route' },
+      { raw: alternative, type: 'alternative' as const, label: 'Alternative' },
+    ];
 
-          const strategies = [
-            { raw: fastest, type: 'fastest' as const },
-            { raw: eco, type: 'eco' as const },
-            { raw: alternative, type: 'alternative' as const },
-          ];
+    return strategies.map((strat) => {
+      const id = `${mode}-${strat.type}`;
+      const distanceMeters = strat.raw.distanceMeters;
+      const durationSeconds = strat.raw.durationSeconds;
+      const geometry = strat.raw.geometry;
 
-          return strategies.map((strat) => {
-            const id = `${mode}-${strat.type}`;
-            const distanceMeters = strat.raw.distanceMeters;
-            const durationSeconds = strat.raw.durationSeconds;
-            const geometry = strat.raw.geometry;
+      // Calculate CO₂ in kg
+      const co2Kg = calculateCO2(distanceMeters, mode);
 
-            // Calculate CO₂ in kg
-            const co2Kg = calculateCO2(distanceMeters, mode);
+      // Calculate CO₂ saved vs driving baseline
+      const co2SavedKg = calculateCO2Saved(distanceMeters, mode);
 
-            // Calculate CO₂ saved vs driving baseline
-            const co2SavedKg = calculateCO2Saved(distanceMeters, mode);
+      // Calculate CO₂ per km in grams for grade assignment
+      const emissionFactorGPerKm = EMISSION_FACTORS[mode];
+      const co2PerKmGrams = emissionFactorGPerKm || 0;
 
-            // Calculate CO₂ per km in grams for grade assignment
-            const emissionFactorGPerKm = EMISSION_FACTORS[mode];
-            const co2PerKmGrams = emissionFactorGPerKm || 0;
+      // Assign eco grade
+      const ecoGrade = getEcoGrade(co2PerKmGrams);
 
-            // Assign eco grade
-            const ecoGrade = getEcoGrade(co2PerKmGrams);
-
-            return {
-              id,
-              mode,
-              strategy: strat.type,
-              distanceMeters,
-              durationSeconds,
-              geometry,
-              co2Kg,
-              co2SavedKg,
-              ecoGrade,
-              label: `${mode.charAt(0).toUpperCase() + mode.slice(1)} (${strat.type})`,
-            } as RouteResult;
-          });
-        } catch (err) {
-          console.error(`Failed to fetch ${mode} routes:`, err);
-          return [];
-        }
-      })()
-    )
-  );
-
-  return results.flat();
+      return {
+        id,
+        mode,
+        strategy: strat.type,
+        distanceMeters,
+        durationSeconds,
+        geometry,
+        co2Kg,
+        co2SavedKg,
+        ecoGrade,
+        label: strat.label,
+      } as RouteResult;
+    });
+  } catch (err) {
+    console.error(`Failed to fetch ${mode} routes:`, err);
+    return [];
+  }
 }

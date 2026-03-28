@@ -26,7 +26,7 @@ const MarkerLayer = dynamic(() => import('@/components/map/MarkerLayer'), { ssr:
 
 export default function HomePage() {
   const mapRef = useRef(null);
-  const { state, handleOriginChange, handleDestinationChange, handleSelectRoute } = useRoutes();
+  const { state, handleOriginChange, handleDestinationChange, handleSelectRoute, handleModeChange } = useRoutes();
   const [tripRefreshTrigger, setTripRefreshTrigger] = useState(0);
   const [advancedOpen, setAdvancedOpen] = useState(false);
 
@@ -87,6 +87,7 @@ export default function HomePage() {
           state={state}
           onOriginChange={handleOriginChange}
           onDestinationChange={handleDestinationChange}
+          onModeChange={handleModeChange}
           onSelectRoute={handleSelectRoute}
           onOpenAdvanced={() => setAdvancedOpen(true)}
           onTripLogged={handleTripLogged}

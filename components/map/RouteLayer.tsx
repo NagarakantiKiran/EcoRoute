@@ -24,9 +24,9 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     layerIdsRef.current = [];
 
     // Add new route layers
-    // Sort routes so driving is last (bottom layer) and walking/cycling on top
+    // Sort routes so driving/ev is last (bottom layer) and walking/cycling on top
     const sortedRoutes = [...routes].sort((a, b) => {
-      const order: Record<string, number> = { walking: 0, cycling: 1, driving: 2 };
+      const order: Record<string, number> = { walking: 0, cycling: 1, driving: 2, ev: 2 };
       return (order[a.mode] ?? 3) - (order[b.mode] ?? 3);
     });
 
@@ -38,6 +38,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
         walking: 7,
         cycling: 5,
         driving: 3,
+        ev: 3,
       };
 
       map.addSource(id, {
@@ -89,6 +90,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
         walking: 7,
         cycling: 5,
         driving: 3,
+        ev: 3,
       };
 
       map.setPaintProperty(id, 'line-width', isActive ? 7 : (baseWidth[route.mode] || 5));

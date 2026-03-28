@@ -28,12 +28,15 @@ export default function RouteOptions({ routes, selectedRouteId, onSelectRoute, i
     return null;
   }
 
-  const modeOrder: Array<RouteResult['mode']> = ['walking', 'cycling', 'driving'];
   const strategyOrder: Record<RouteResult['strategy'], number> = {
     fastest: 0,
     eco: 1,
     alternative: 2,
   };
+
+  const orderedRoutes = [...routes].sort(
+    (a, b) => strategyOrder[a.strategy] - strategyOrder[b.strategy]
+  );
 
   return (
     <div style={{ padding: '20px' }}>
@@ -51,37 +54,14 @@ export default function RouteOptions({ routes, selectedRouteId, onSelectRoute, i
       </div>
 
       <div>
-        {modeOrder.map((mode) => {
-          const modeRoutes = routes
-            .filter((route) => route.mode === mode)
-            .sort((a, b) => strategyOrder[a.strategy] - strategyOrder[b.strategy]);
-
-          if (modeRoutes.length === 0) return null;
-
-          return (
-            <div key={mode} style={{ marginBottom: '12px' }}>
-              <div
-                style={{
-                  fontSize: '11px',
-                  color: 'var(--eco-muted)',
-                  marginBottom: '8px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.08em',
-                }}
-              >
-                {mode.charAt(0).toUpperCase() + mode.slice(1)}
-              </div>
-              {modeRoutes.map((route) => (
-                <RouteCard
-                  key={route.id}
-                  route={route}
-                  isSelected={selectedRouteId === route.id}
-                  onSelect={() => onSelectRoute(route.id)}
-                />
-              ))}
-            </div>
-          );
-        })}
+        {orderedRoutes.map((route) => (
+          <RouteCard
+            key={route.id}
+            route={route}
+            isSelected={selectedRouteId === route.id}
+            onSelect={() => onSelectRoute(route.id)}
+          />
+        ))}
       </div>
     </div>
   );

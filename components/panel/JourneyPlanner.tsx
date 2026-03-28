@@ -9,6 +9,7 @@ interface Props {
   state: JourneyState;
   onOriginChange: (value: string) => void;
   onDestinationChange: (value: string) => void;
+  onModeChange: (mode: JourneyState['selectedMode']) => void;
   onSelectRoute: (routeId: string) => void;
   onOpenAdvanced: () => void;
   onTripLogged: () => void;
@@ -20,6 +21,7 @@ export default function JourneyPlanner({
   state, 
   onOriginChange, 
   onDestinationChange,
+  onModeChange,
   onSelectRoute,
   onOpenAdvanced,
   onTripLogged,
@@ -98,6 +100,69 @@ export default function JourneyPlanner({
               ● {state.destination}
             </div>
           )}
+        </div>
+
+        {/* Mode selector */}
+        <div style={{ marginBottom: '16px' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '12px',
+              color: 'var(--eco-text)',
+              marginBottom: '10px',
+              fontWeight: 600,
+            }}
+          >
+            <span>🚗</span>
+            <span>Select Vehicle</span>
+          </div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: '12px',
+            }}
+          >
+            {[
+              { mode: 'driving', label: 'Petrol Car', icon: '🚗' },
+              { mode: 'ev', label: 'Electric', icon: '⚡' },
+              { mode: 'cycling', label: 'Bicycle', icon: '🚴' },
+              { mode: 'walking', label: 'Walking', icon: '🚶' },
+            ].map((option) => {
+              const isActive = state.selectedMode === option.mode;
+              return (
+                <button
+                  key={option.mode}
+                  type="button"
+                  onClick={() => onModeChange(option.mode as JourneyState['selectedMode'])}
+                  style={{
+                    minHeight: '72px',
+                    borderRadius: '12px',
+                    border: `2px solid ${isActive ? 'var(--eco-green)' : 'var(--eco-border)'}`,
+                    background: isActive ? 'var(--eco-bg)' : 'var(--eco-surface)',
+                    color: 'var(--eco-text)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    boxShadow: isActive ? '0 6px 18px rgba(82, 183, 136, 0.22)' : 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span style={{ fontSize: '22px', color: isActive ? 'var(--eco-green)' : 'var(--eco-text)' }}>
+                    {option.icon}
+                  </span>
+                  <span>{option.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Error */}

@@ -16,11 +16,12 @@ export function useRoutes() {
     destinationCoords: null,
     routes: [],
     selectedRouteId: null,
+    selectedMode: 'driving',
     isLoading: false,
     error: null,
   });
 
-  const { originCoords, destinationCoords } = state;
+  const { originCoords, destinationCoords, selectedMode } = state;
 
   // Fetch routes when both originCoords and destinationCoords are set
   useEffect(() => {
@@ -28,7 +29,7 @@ export function useRoutes() {
       if (originCoords && destinationCoords) {
         setState((prev) => ({ ...prev, isLoading: true, error: null }));
         try {
-          const routes = await fetchRoutes(originCoords, destinationCoords);
+          const routes = await fetchRoutes(originCoords, destinationCoords, selectedMode);
           
           // Auto-select greenest route (best eco grade = lowest CO2)
           const greenestRoute = routes.reduce((best, current) => {
@@ -53,7 +54,7 @@ export function useRoutes() {
     };
     getRoutes();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [originCoords, destinationCoords]);
+  }, [originCoords, destinationCoords, selectedMode]);
 
   const [originTimer, setOriginTimer] = useState<NodeJS.Timeout | null>(null);
   const [destTimer, setDestTimer] = useState<NodeJS.Timeout | null>(null);
@@ -160,5 +161,17 @@ export function useRoutes() {
     []
   );
 
-  return { state, handleOriginChange, handleDestinationChange, handleSelectRoute };
+  const handleModeChange = useCallback(
+    (mode: JourneyState['selectedMode']) => {
+      setState((prev) => ({
+        ...prev,
+        selectedMode: mode,
+        routes: [],
+        selectedRouteId: null,
+      }));
+    },
+    []
+  );
+
+  return { state, handleOriginChange, handleDestinationChange, handleSelectRoute, handleModeChange };
 }

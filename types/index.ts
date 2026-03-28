@@ -22,6 +22,7 @@ export interface JourneyState {
   destinationCoords: [number, number] | null;
   routes: RouteResult[];
   selectedRouteId: string | null;
+  selectedMode: TransportMode;
   isLoading: boolean;
   error: string | null;
 }

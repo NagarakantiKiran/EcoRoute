@@ -14,16 +14,10 @@ const GRADE_LABELS: Record<EcoGrade, string> = {
   D: 'Less eco-friendly',
 };
 
-const MODE_ICONS: Record<string, string> = {
-  walking: '🚶',
-  cycling: '🚴',
-  driving: '🚗',
-};
-
-const STRATEGY_LABELS: Record<string, string> = {
-  fastest: '⚡ Fastest',
-  eco: '🌿 Eco',
-  alternative: '🛣️ Alt',
+const STRATEGY_DETAILS: Record<string, { label: string; icon: string }> = {
+  fastest: { label: 'Fastest Route', icon: '⚡' },
+  eco: { label: 'Eco Route', icon: '🌿' },
+  alternative: { label: 'Alternative', icon: '🛣️' },
 };
 
 const STRATEGY_COLORS: Record<string, string> = {
@@ -37,6 +31,10 @@ export default function RouteCard({ route, isSelected, onSelect }: Props) {
   const distanceKm = (route.distanceMeters / 1000).toFixed(1);
   const gradeColor = GRADE_COLORS[route.ecoGrade as EcoGrade];
   const strategyColor = STRATEGY_COLORS[route.strategy] || '#52b788';
+  const strategyDetails = STRATEGY_DETAILS[route.strategy] || {
+    label: 'Route',
+    icon: '🛣️',
+  };
 
   return (
     <div
@@ -60,7 +58,7 @@ export default function RouteCard({ route, isSelected, onSelect }: Props) {
         <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
           {/* Icon */}
           <div style={{ fontSize: '28px' }}>
-            {MODE_ICONS[route.mode]}
+            {strategyDetails.icon}
           </div>
 
           {/* Main info */}
@@ -76,22 +74,7 @@ export default function RouteCard({ route, isSelected, onSelect }: Props) {
                 alignItems: 'center',
               }}
             >
-              {route.mode.charAt(0).toUpperCase() + route.mode.slice(1)}
-              {/* Strategy badge */}
-              <span
-                style={{
-                  fontSize: '10px',
-                  padding: '3px 8px',
-                  borderRadius: '4px',
-                  background: `${strategyColor}20`,
-                  color: strategyColor,
-                  fontWeight: 700,
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                {STRATEGY_LABELS[route.strategy]}
-              </span>
+              {strategyDetails.label}
             </div>
 
             <div style={{ fontSize: '12px', color: 'var(--eco-muted)', marginBottom: '8px' }}>
@@ -135,25 +118,6 @@ export default function RouteCard({ route, isSelected, onSelect }: Props) {
         </div>
       </div>
 
-      {/* Progress bar — eco score relative to worst route */}
-      <div
-        style={{
-          height: '3px',
-          background: 'var(--eco-border)',
-          borderRadius: '2px',
-          marginTop: '12px',
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            height: '100%',
-            background: gradeColor,
-            width: `${Math.max(20, 100 - route.co2Kg * 10)}%`,
-            transition: 'width 0.3s',
-          }}
-        />
-      </div>
     </div>
   );
 }
