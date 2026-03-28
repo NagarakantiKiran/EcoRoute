@@ -13,8 +13,12 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
   const layerIdsRef = useRef<string[]>([]);
   const pulseIntervalRef = useRef<number | null>(null);
 
+  const isUsableMap = (instance: maplibregl.Map | null | undefined): instance is maplibregl.Map => {
+    return !!instance && typeof instance.getLayer === 'function' && typeof instance.getSource === 'function';
+  };
+
   useEffect(() => {
-    if (!map) return;
+    if (!isUsableMap(map)) return;
     const mapInstance = map;
 
     // Remove previous layers and sources
@@ -70,7 +74,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     });
 
     return () => {
-      if (!mapInstance) return;
+      if (!isUsableMap(mapInstance)) return;
       layerIdsRef.current.forEach((id) => {
         if (mapInstance.getLayer(id)) mapInstance.removeLayer(id);
         if (mapInstance.getSource(id)) mapInstance.removeSource(id);
@@ -80,12 +84,12 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
   }, [map, routes]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!isUsableMap(map)) return;
 
     // Update active/inactive styling and bring active to front
     routes.forEach((route) => {
       const id = `route-${route.id}`;
-      if (!map?.getLayer(id)) return;
+      if (!map.getLayer(id)) return;
 
       const isActive = activeRouteId === route.id;
       const baseWidth: Record<string, number> = {
@@ -118,11 +122,11 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
   }, [map, routes, activeRouteId]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!isUsableMap(map)) return;
     if (!activeRouteId) return;
 
     const activeLayerId = `route-${activeRouteId}`;
-    if (!map?.getLayer(activeLayerId)) return;
+    if (!map.getLayer(activeLayerId)) return;
 
     let tick = 0;
     if (pulseIntervalRef.current) {
@@ -132,7 +136,7 @@ export default function RouteLayer({ map, routes, activeRouteId }: Props) {
     pulseIntervalRef.current = window.setInterval(() => {
       const dash = tick % 2 === 0 ? [2, 2] : [1, 3];
       const width = tick % 2 === 0 ? 7 : 5;
-      if (map?.getLayer(activeLayerId)) {
+      if (map.getLayer(activeLayerId)) {
         map.setPaintProperty(activeLayerId, 'line-dasharray', dash);
         map.setPaintProperty(activeLayerId, 'line-width', width);
       }
