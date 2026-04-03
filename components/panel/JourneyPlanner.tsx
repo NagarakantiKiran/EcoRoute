@@ -6,6 +6,7 @@ import { JourneyState, RouteResult } from '@/types';
 import RouteOptions from './RouteOptions';
 import StartButton from './StartButton';
 import WeatherWidget from '@/components/widgets/WeatherWidget';
+import RouteAdvisor from '@/components/widgets/RouteAdvisor';
 
 interface Props {
   state: JourneyState;
@@ -223,6 +224,12 @@ export default function JourneyPlanner({
               selectedRouteId={state.selectedRouteId}
               onSelectRoute={onSelectRoute}
               isLoading={state.isLoading}
+            />
+
+            <RouteAdvisor
+              routes={state.routes}
+              origin={state.origin}
+              destination={state.destination}
             />
 
             {/* CTA Button */}

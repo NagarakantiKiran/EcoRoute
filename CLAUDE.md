@@ -17,6 +17,7 @@ Single Next.js app that:
 
 ## Critical rules
 - ORS_API_KEY stays server-side ONLY — never add NEXT_PUBLIC_ prefix
+- GROQ_API_KEY stays server-side ONLY — never add NEXT_PUBLIC_ prefix
 - All localStorage keys prefixed with 'ecoroute:'
 - CO₂ values always in kg (not grams) in the UI layer
 - Emission factors from config/emissions.ts ONLY — never hardcode in components
@@ -31,6 +32,7 @@ Single Next.js app that:
 - lib/routing.ts           → ORS API wrapper
 - lib/storage.ts           → localStorage helpers (never call localStorage directly in components)
 - app/api/route/route.ts   → Server-side ORS proxy (API key lives here ONLY)
+- app/api/advisor/route.ts → Groq proxy (server-side, GROQ_API_KEY lives here ONLY)
 - types/index.ts           → All TypeScript interfaces
 - app/globals.css          → CSS variables and dark green theme
 
